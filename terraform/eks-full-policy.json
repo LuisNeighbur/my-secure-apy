@@ -91,48 +91,16 @@
                 "autoscaling:DeleteAutoScalingGroup",
                 "autoscaling:DescribeAutoScalingGroups",
                 "autoscaling:UpdateAutoScalingGroup",
-                "elasticloadbalancing:AddTags",
-                "elasticloadbalancing:CreateListener",
-                "elasticloadbalancing:CreateLoadBalancer",
-                "elasticloadbalancing:CreateTargetGroup",
-                "elasticloadbalancing:DeleteListener",
-                "elasticloadbalancing:DeleteLoadBalancer",
-                "elasticloadbalancing:DeleteTargetGroup",
-                "elasticloadbalancing:DescribeListeners",
-                "elasticloadbalancing:DescribeLoadBalancers",
-                "elasticloadbalancing:DescribeTargetGroups",
-                "elasticloadbalancing:ModifyLoadBalancerAttributes",
-                "elasticloadbalancing:ModifyTargetGroup"
-            ],
-            "Resource": "*"
-        },
-        {
-            "Effect": "Allow",
-            "Action": [
-                "kms:CreateGrant",
-                "kms:CreateKey",
-                "kms:DeleteKey",
-                "kms:DescribeKey",
-                "kms:GetKeyPolicy",
-                "kms:ListGrants",
-                "kms:ListKeyPolicies",
-                "kms:ListKeys",
-                "kms:PutKeyPolicy",
-                "kms:RevokeGrant",
-                "kms:ScheduleKeyDeletion"
-            ],
-            "Resource": "*"
-        },
-        {
-            "Effect": "Allow",
-            "Action": [
-                "s3:CreateBucket",
-                "s3:DeleteBucket",
-                "s3:GetBucketLocation",
-                "s3:GetBucketPolicy",
-                "s3:ListBucket",
-                "s3:PutBucketPolicy",
-                "s3:PutEncryptionConfiguration"
+                "elasticloadbalancing:*",
+                "secretsmanager:CreateSecret",
+                "secretsmanager:DeleteSecret",
+                "secretsmanager:GetSecretValue",
+                "secretsmanager:DescribeSecret",
+                "secretsmanager:PutSecretValue",
+                "secretsmanager:UpdateSecret",
+                "secretsmanager:TagResource",
+                "secretsmanager:UntagResource",
+                "secretsmanager:ListSecrets"
             ],
             "Resource": "*"
         }

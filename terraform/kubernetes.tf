@@ -8,6 +8,7 @@ resource "kubernetes_deployment" "python_app" {
     }
   }
 
+  wait_for_rollout = true
   spec {
     replicas = 2
 
@@ -37,11 +38,12 @@ resource "kubernetes_deployment" "python_app" {
           "kubernetes.io/os" = "linux"
         }
         container {
-          image = "docker.io/luisneighbur/my-secure-api:v1.1.4"
-          name  = "my-secure-api"
+          image             = "docker.io/luisneighbur/my-secure-api:v1.1.4"
+          name              = "my-secure-api"
+          image_pull_policy = "Always"
 
           port {
-            container_port = 5000
+            container_port = 8000
           }
 
           resources {
@@ -59,8 +61,8 @@ resource "kubernetes_deployment" "python_app" {
           # o la ruta que sepas que existe en tu API
           liveness_probe {
             http_get {
-              path = "/" # Cambiado de /health a /
-              port = 5000
+              path = "/health" # Cambiado de /health a /
+              port = 8000
             }
             initial_delay_seconds = 30
             period_seconds        = 10
@@ -70,8 +72,8 @@ resource "kubernetes_deployment" "python_app" {
 
           readiness_probe {
             http_get {
-              path = "/" # Cambiado de /health a /
-              port = 5000
+              path = "/health" # Cambiado de /health a /
+              port = 8000
             }
             initial_delay_seconds = 5
             period_seconds        = 5
@@ -82,7 +84,22 @@ resource "kubernetes_deployment" "python_app" {
           # Añadiendo variables de entorno si son necesarias
           env {
             name  = "PORT"
-            value = "5000"
+            value = "8000"
+          }
+          env {
+            name  = "SECRET_NAME"
+            value = aws_secretsmanager_secret.api_secret.name
+          }
+
+          env {
+            name  = "AWS_DEFAULT_REGION"
+            value = var.aws_region
+          }
+
+          # Añadir environment para identificar el entorno
+          env {
+            name  = "ENVIRONMENT"
+            value = var.environment
           }
         }
       }
@@ -107,7 +124,7 @@ resource "kubernetes_service" "python_app_service" {
     port {
       protocol    = "TCP"
       port        = 80
-      target_port = 5000
+      target_port = 8000
     }
 
     type = "LoadBalancer"

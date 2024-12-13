@@ -21,3 +21,9 @@ variable "environment" {
   type        = string
   default     = "production"
 }
+
+variable "jwt_secret_key" {
+  description = "JWT secret key for API authentication"
+  type        = string
+  sensitive   = true # Marca la variable como sensible
+}
