@@ -82,9 +82,9 @@ resource "aws_eks_node_group" "node_group" {
   node_role_arn   = aws_iam_role.eks_node_role.arn
   subnet_ids      = [aws_subnet.subnet1.id, aws_subnet.subnet2.id]
   scaling_config {
-    desired_size = 1
-    max_size     = 2
-    min_size     = 1
+    desired_size = 2
+    max_size     = 4
+    min_size     = 2
   }
   instance_types = ["t3.micro"] # You can use the minimal instance type such as t3.micro
   ami_type       = "AL2_x86_64" # Amazon Linux 2 AMI
@@ -137,43 +137,6 @@ provider "kubernetes" {
   token                  = data.aws_eks_cluster_auth.auth.token
 }
 
-# resource "kubernetes_config_map" "aws_auth" {
-#   metadata {
-#     name      = "aws-auth"
-#     namespace = "kube-system"
-#   }
-
-#   data = {
-#     mapRoles = yamlencode({
-#       "rolearn"  = aws_iam_role.eks_node_role.arn
-#       "username" = "system:node:{{EC2PrivateDNSName}}"
-#       "groups" = [
-#         "system:bootstrappers",
-#         "system:nodes"
-#       ]
-#     })
-#     mapRoles2 = yamlencode({
-#       "rolearn"  = aws_iam_role.eks_cluster_role.arn
-#       "username" = "eks-cluster-role"
-#       "groups" = [
-#         "system:masters"
-#       ]
-#     })
-#     mapUsers = yamlencode([
-#       {
-#         "userarn"  = "arn:aws:iam::353142293520:user/dev01"
-#         "username" = "dev01"
-#         "groups" = [
-#           "system:masters"
-#         ]
-#       }
-#     ])
-#   }
-
-#   lifecycle {
-#     ignore_changes = [data]
-#   }
-# }
 
 resource "aws_sns_topic" "sns_topic" {
   name = "my-secure-sns-topic"
