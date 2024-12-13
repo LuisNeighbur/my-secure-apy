@@ -35,7 +35,12 @@ token=$(curl -X POST "http://localhost:8000/token" -H "Content-Type: application
 ```bash
  curl -H "Authorization: Bearer $token" http://localhost:8000/products
 ```
-
+```bash
+ curl -H "Authorization: Bearer $token" http://localhost:8000/products/1
+```
+```bash
+ curl -H "Authorization: Bearer $token" http://localhost:8000/users/me
+```
 You can also explore the API documentation at `http://localhost:8000/docs` after starting the server.
 
 Would you like me to explain any part of the code or add more features to the API?
