@@ -1,11 +1,12 @@
-from fastapi import FastAPI, Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
-from jose import JWTError, jwt
+import jwt
+from jwt.exceptions import InvalidTokenError
 from passlib.context import CryptContext
 from datetime import datetime, timedelta
 from typing import Optional
 from pydantic import BaseModel
 from config import SecretsManager
+from fastapi import FastAPI, Depends, HTTPException, status
+from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 
 # Initialize Secrets Manager
 secrets_manager = SecretsManager()
@@ -16,10 +17,9 @@ try:
     SECRET_KEY = secrets["jwt_secret_key"]
 except Exception as e:
     print(f"Error fetching secrets: {e}")
-    # Fallback for development (remove in production)
-    SECRET_KEY = "development-secret-key"
-
-ALGORITHM = "HS256"
+    exit(1)
+# Using stronger algorithm
+ALGORITHM = "HS512"  # Upgraded from HS256
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
 # Sample user database
@@ -59,7 +59,7 @@ class UserInDB(User):
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
-app = FastAPI(title="Simple API with JWT Auth and AWS Secrets Manager")
+app = FastAPI(title="Simple API with JWT Auth")
 
 def verify_password(plain_password, hashed_password):
     return pwd_context.verify(plain_password, hashed_password)
@@ -81,8 +81,23 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
         expire = datetime.utcnow() + expires_delta
     else:
         expire = datetime.utcnow() + timedelta(minutes=15)
-    to_encode.update({"exp": expire})
-    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    
+    to_encode.update({
+        "exp": expire,
+        "iat": datetime.utcnow(),  # Issued at
+        "nbf": datetime.utcnow(),  # Not valid before
+    })
+    
+    # Using PyJWT instead of python-jose
+    encoded_jwt = jwt.encode(
+        to_encode, 
+        SECRET_KEY, 
+        algorithm=ALGORITHM,
+        headers={
+            "typ": "JWT",
+            "alg": ALGORITHM
+        }
+    )
     return encoded_jwt
 
 async def get_current_user(token: str = Depends(oauth2_scheme)):
@@ -92,12 +107,24 @@ async def get_current_user(token: str = Depends(oauth2_scheme)):
         headers={"WWW-Authenticate": "Bearer"},
     )
     try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        # Using PyJWT for decoding
+        payload = jwt.decode(
+            token, 
+            SECRET_KEY, 
+            algorithms=[ALGORITHM],
+            options={
+                "verify_signature": True,
+                "verify_exp": True,
+                "verify_nbf": True,
+                "verify_iat": True,
+                "require": ["exp", "iat", "nbf", "sub"]
+            }
+        )
         username: str = payload.get("sub")
         if username is None:
             raise credentials_exception
         token_data = TokenData(username=username)
-    except JWTError:
+    except InvalidTokenError:
         raise credentials_exception
     user = get_user(fake_users_db, username=token_data.username)
     if user is None:
