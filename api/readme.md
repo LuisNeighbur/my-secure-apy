@@ -44,3 +44,53 @@ token=$(curl -X POST "http://localhost:8000/token" -H "Content-Type: application
 You can also explore the API documentation at `http://localhost:8000/docs` after starting the server.
 
 Would you like me to explain any part of the code or add more features to the API?
+
+
+Agregaré esto al README.md de la carpeta `api`:
+
+```markdown
+## Local Development with Docker
+
+### Building the Image
+```bash
+docker build -t my-secure-api:v1.1.4 .
+```
+
+### Running the Container
+
+Using local AWS credentials (recommended):
+```bash
+docker run -p 8000:8000 \
+  -v ~/.aws:/root/.aws:ro \
+  -e AWS_DEFAULT_REGION=us-east-1 \
+  -e SECRET_NAME=my-super-secret-key \
+  my-secure-api:v1.1.4
+```
+
+This setup:
+- Mounts your local AWS credentials securely (read-only)
+- Uses environment variables for configuration
+- Exposes port 8000 for API access
+
+### Prerequisites
+- AWS CLI configured (`aws configure`)
+- Docker installed
+- AWS credentials in `~/.aws/`
+
+### Environment Variables
+- `AWS_DEFAULT_REGION`: AWS region (default: us-east-1)
+- `SECRET_NAME`: Name of your secret in AWS Secrets Manager
+- AWS credentials are mounted from your local configuration
+
+### Health Check
+```bash
+curl http://localhost:8000/health
+```
+
+### Testing Authentication
+```bash
+curl -X POST "http://localhost:8000/token" \
+     -H "Content-Type: application/x-www-form-urlencoded" \
+     -d "username=johndoe&password=secret"
+```
+```
