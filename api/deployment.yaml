@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: my-secure-api
+  labels:
+    app: my-secure-api
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: my-secure-api
+  template:
+    metadata:
+      labels:
+        app: my-secure-api
+    spec:
+      containers:
+      - name: python-app
+        image: docker.io/luisneighbur/my-secure-api:v1.1.0 # Reemplaza con la imagen subida
+        ports:
+        - containerPort: 5000
