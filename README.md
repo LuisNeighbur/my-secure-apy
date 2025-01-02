@@ -1,148 +1,205 @@
-# Secure API Infrastructure Project
+# 🛡️ Secure API Infrastructure Project
 
-This project consists of a secure FastAPI application deployed on AWS EKS with SSL/TLS encryption, JWT authentication, and AWS Secrets Manager integration.
+This project implements a secure FastAPI application with dual deployment capabilities for AWS EKS and local development environments. It serves as both a production-ready infrastructure template and an educational platform for understanding security vulnerabilities and their remediation.
 
-## Architecture Overview
+## 🎯 Project Purpose
 
-- **API**: FastAPI application with JWT authentication
-- **Infrastructure**: AWS EKS with Terraform
-- **Security**: SSL/TLS, AWS Secrets Manager
-- **Load Balancing**: AWS Application Load Balancer
-- **DNS**: Route53 with SSL certificate
+The infrastructure demonstrates progressive security hardening through multiple versions, allowing developers and security professionals to understand common vulnerabilities and their solutions. Each version from 1.1.0 to 1.1.4 addresses specific security concerns while maintaining full functionality.
 
-## Project Structure
+## 🏗️ Architecture Overview
+
+The project supports two distinct deployment modes, each with comprehensive security features:
+
+Production Environment (AWS):
+- FastAPI application secured with JWT authentication
+- EKS-based Kubernetes deployment
+- SSL/TLS encryption via AWS Certificate Manager
+- AWS Secrets Manager integration
+- Application Load Balancer for traffic management
+- Route53 DNS configuration
+
+Local Development Environment:
+- Kind-based Kubernetes cluster
+- HashiCorp Vault for secrets management
+- Local SSL/TLS certificates
+- MetalLB for load balancing
+- Development-focused security controls
+
+## 📂 Project Structure
 
 ```
-.
-├── app/                    # FastAPI application
-│   ├── main.py            # Main application file
-│   ├── config.py          # Configuration and AWS integration
-│   ├── requirements.txt   # Python dependencies
-│   └── Dockerfile         # Container configuration
-│
-├── terraform/             # Infrastructure as Code
-│   ├── alb.tf            # Load Balancer configuration
-│   ├── certificates.tf    # SSL/TLS certificates
-│   ├── eks-cluster.tf    # EKS cluster configuration
-│   ├── iam.tf            # IAM roles and policies
-│   ├── kubernetes.tf      # Kubernetes resources
-│   ├── monitoring.tf     # CloudWatch configuration
-│   ├── node-group.tf     # EKS node group
-│   ├── providers.tf      # AWS and Kubernetes providers
-│   ├── route53.tf        # DNS configuration
-│   ├── secrets.tf        # AWS Secrets Manager
-│   ├── security-groups.tf # Security groups
-│   ├── variables.tf      # Terraform variables
-│   └── vpc.tf            # Network configuration
+ .
+├──  api
+│   ├──  config.py
+│   ├──  deployment.yaml
+│   ├──  Dockerfile
+│   ├──  main.py
+│   ├──  readme.md
+│   ├──  requirements.txt
+│   └──  service.yaml
+├──  kubernetes
+│   └──  policies
+├──  nginx
+├──  README.md
+└──  terraform
+    ├──  alb.tf
+    ├──  certificates.tf
+    ├──  charts
+    │   ├──  vault-auth
+    │   │   └──  templates
+    │   └──  vault-config
+    │       └──  templates
+    ├──  data.tf
+    ├──  eks-full-policy.json
+    ├──  eks-nodes-key.pem
+    ├──  eks_cluster.tf
+    ├──  iam.tf
+    ├──  kubernetes.tf
+    ├──  monitoring.tf
+    ├──  node-group.tf
+    ├──  outputs.tf
+    ├──  providers.tf
+    ├──  readme.md
+    ├──  route53.tf
+    ├──  secrets.tf
+    ├──  security-groups.tf
+    ├──  terraform.tfvars
+    ├──  variables.tf
+    └──  vpc.tf
 ```
 
-## Prerequisites
+## 🚀 Security Evolution
 
-- AWS CLI configured
+The application implements security improvements across five versions:
+
+Version 1.1.0: Base Implementation
+- Initial JWT authentication setup
+- Basic HTTPS configuration
+- Intentional vulnerabilities for educational purposes
+
+Version 1.1.1: Initial Security Improvements
+- Enhanced JWT security
+- Basic secrets management
+- Improved input validation
+
+Version 1.1.2: Security Hardening
+- Advanced secret management integration
+- Enhanced authentication mechanisms
+- Improved network security
+
+Version 1.1.3: Infrastructure Security
+- Updated base images
+- Enhanced monitoring capabilities
+- Additional security controls
+
+Version 1.1.4: Production Ready
+- Complete security hardening
+- Comprehensive monitoring
+- Production-grade configurations
+
+## ⚙️ Prerequisites
+
+Production Deployment:
+- AWS CLI with configured credentials
 - Terraform ≥ 1.0.0
 - Docker
 - kubectl
 - Python 3.9+
 
-## Quick Start
+Local Development:
+- Docker Engine 20.10+
+- Kind
+- kubectl
+- Python 3.9+
 
-1. **Build and Push the Docker Image**
+## 🚀 Deployment Instructions
+
+### AWS Deployment
+
+1. Build and push the container:
 ```bash
-cd app
+cd api
 docker build -t your-repo/secure-api:latest .
 docker push your-repo/secure-api:latest
 ```
 
-2. **Configure Infrastructure**
+2. Configure infrastructure:
 ```bash
 cd terraform
-# Create terraform.tfvars
 cp terraform.tfvars.example terraform.tfvars
-# Edit with your values
+# Update variables as needed
 ```
 
-3. **Deploy Infrastructure**
+3. Deploy:
 ```bash
 terraform init
 terraform apply
 ```
 
-4. **Configure kubectl**
+4. Configure kubectl:
 ```bash
 aws eks update-kubeconfig --name minimal-eks-cluster --region us-east-1
 ```
 
-## Environment Variables
+### Local Development
 
-Create a `terraform.tfvars` file with:
-```hcl
-aws_region   = "us-east-1"
-cluster_name = "minimal-eks-cluster"
-root_domain  = "yourdomain.com"
-api_domain   = "api.yourdomain.com"
-environment  = "production"
-```
-
-## Security Features
-
-- HTTPS only (port 443)
-- JWT authentication
-- AWS Secrets Manager for sensitive data
-- Private subnets for EKS nodes
-- Security groups with minimal permissions
-- ACM certificates for SSL/TLS
-
-## API Endpoints
-
-- `GET /health`: Health check endpoint
-- `POST /token`: JWT token generation
-- `GET /users/me`: Current user information
-- `GET /products`: List of products (protected)
-- `GET /products/{id}`: Specific product (protected)
-
-## Monitoring
-
-- CloudWatch logs for EKS cluster
-- CloudWatch alarms for CPU utilization
-- SNS notifications for alarms
-
-## Estimated Deployment Time
-
-- EKS Cluster: ~15 minutes
-- Load Balancer: ~5-7 minutes
-- Certificate Validation: ~5-10 minutes
-- Total: ~30 minutes
-
-## Common Issues
-
-1. **503 Service Unavailable**
-   - Check target group health
-   - Verify security group rules
-   - Check pod logs
-
-2. **Certificate Issues**
-   - Ensure DNS propagation
-   - Verify ACM certificate validation
-
-3. **Authentication Issues**
-   - Check Secrets Manager configuration
-   - Verify JWT secret key
-
-## Cleanup
-
-To destroy all resources:
+1. Start Kind cluster:
 ```bash
-terraform destroy
+kind create cluster --config kind-config.yaml
 ```
 
-## Contributing
+2. Deploy local infrastructure:
+```bash
+cd terraform
+terraform init
+terraform apply -var-file=local.tfvars
+```
+
+## 🔐 Security Features
+
+The project implements comprehensive security measures:
+
+Core Security:
+- HTTPS-only communication
+- JWT authentication
+- Secrets management integration
+- Network isolation
+- Security group controls
+- SSL/TLS encryption
+
+Monitoring and Alerts:
+- CloudWatch integration (AWS)
+- Health monitoring
+- Performance tracking
+
+## 🌐 Service Access
+
+Production Endpoints:
+- API Gateway: https://api.yourdomain.com
+- Monitoring: CloudWatch dashboards
+- Logs: CloudWatch logs
+
+Local Development:
+- API: http://localhost:8000
+
+## ⚠️ Security Advisory
+
+This project contains intentional security vulnerabilities for educational purposes. Each version demonstrates specific security concepts and their remediation. Version 1.1.4 represents the fully secured implementation suitable for production use.
+
+## 🤝 Contributing
+
+We welcome contributions that enhance both the educational value and security implementations:
 
 1. Fork the repository
-2. Create your feature branch
-3. Commit your changes
-4. Push to the branch
-5. Create a Pull Request
+2. Create a feature branch
+3. Implement changes with documentation
+4. Submit detailed pull request
+5. Participate in code review
 
-## License
+## 📄 License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+This project is licensed under the MIT License. See LICENSE file for details.
+
+---
+
+Note: This project is designed for security education and vulnerability scanning practice with Trivy. For production deployments, use only version 1.1.4 with appropriate security configurations.
